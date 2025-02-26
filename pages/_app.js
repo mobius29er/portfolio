@@ -1,5 +1,13 @@
-import "@/styles/globals.css";
+// pages/_app.js
+import '../styles/globals.css';
+import { SkillsProvider } from '../context/SkillsContext';
 
-export default function App({ Component, pageProps }) {
-  return <Component {...pageProps} />;
+function MyApp({ Component, pageProps }) {
+  return (
+    <SkillsProvider>
+      <Component {...pageProps} />
+    </SkillsProvider>
+  );
 }
+
+export default MyApp;

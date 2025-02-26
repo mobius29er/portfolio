@@ -1,20 +1,10 @@
 // pages/about.js
-import { useState } from "react";
+import { useSkills } from "../context/SkillsContext";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
 export default function About() {
-  const TOTAL_XP = 100;
-  const initialSkills = [
-    { name: "Product Management", allocation: 0 },
-    { name: "Data Analytics", allocation: 0 },
-    { name: "UX/UI", allocation: 0 },
-    { name: "FinTech", allocation: 0 },
-    { name: "Blockchain", allocation: 0 },
-  ];
-  const [skills, setSkills] = useState(initialSkills);
-
-  const totalAllocated = skills.reduce((sum, s) => sum + s.allocation, 0);
-  const remaining = TOTAL_XP - totalAllocated;
+  // Pull data from context
+  const { skills, setSkills, TOTAL_XP, totalAllocated, remaining } = useSkills();
 
   const dataForPie = skills.map((skill) => ({
     name: skill.name,
@@ -62,7 +52,9 @@ export default function About() {
       </div>
 
       <div className="mt-6 text-white">
-        <p>Total Allocated: {totalAllocated} / {TOTAL_XP} XP</p>
+        <p>
+          Total Allocated: {totalAllocated} / {TOTAL_XP} XP
+        </p>
         {remaining < 0 ? (
           <p className="text-red-500">Over Budget by {-remaining} XP!</p>
         ) : (
