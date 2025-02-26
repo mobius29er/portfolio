@@ -1,15 +1,16 @@
+// components/StarryTickers.js
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-export default function StarryTickers() {
+export default function StarryTickers({ hyperspace }) {
   const mountRef = useRef(null);
 
   useEffect(() => {
-    // 1. Setup Scene, Camera, Renderer
+    // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
-      75, // field of view
-      window.innerWidth / window.innerHeight, // aspect ratio
+      75,
+      window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
@@ -17,38 +18,47 @@ export default function StarryTickers() {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000); // black background
+    renderer.setClearColor(0x000000);
     mountRef.current.appendChild(renderer.domElement);
 
-    // 2. Create "Stars" (Placeholder Tickers)
+    // Create stars
     const starGeometry = new THREE.SphereGeometry(0.02, 8, 8);
     const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const stars = [];
 
     function createStar() {
       const star = new THREE.Mesh(starGeometry, starMaterial);
-
-      // Randomly position the star in some range
       const [x, y, z] = Array(3)
         .fill()
         .map(() => THREE.MathUtils.randFloatSpread(10));
       star.position.set(x, y, z);
-
       scene.add(star);
+      stars.push(star);
     }
 
-    // Generate multiple stars
     Array(300).fill().forEach(createStar);
 
-    // 3. Animation Loop
+    // Animate
     function animate() {
       requestAnimationFrame(animate);
-      // Optionally rotate the scene or add slight camera movement
-      // scene.rotation.y += 0.0005; // slow rotation for a "twinkle" effect
+
+      // If hyperspace == true, move stars quickly along z-axis
+      if (hyperspace) {
+        stars.forEach((star) => {
+          // increase the speed
+          star.position.z += 0.2;
+          // if star goes beyond camera, reset it behind
+          if (star.position.z > 5) {
+            star.position.z = -5;
+          }
+        });
+      }
+
       renderer.render(scene, camera);
     }
     animate();
 
-    // 4. Handle Window Resize
+    // Resize
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -56,12 +66,15 @@ export default function StarryTickers() {
     }
     window.addEventListener("resize", onWindowResize);
 
-    // Cleanup on unmount
+    // Cleanup
     return () => {
       window.removeEventListener("resize", onWindowResize);
-      mountRef.current.removeChild(renderer.domElement);
+      // Only remove the renderer if mountRef.current is still valid
+      if (mountRef.current && renderer.domElement) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
     };
-  }, []);
+  }, [hyperspace]);
 
   return <div ref={mountRef} className="fixed inset-0 z-[-1]" />;
 }
