@@ -1,7 +1,4 @@
 
----
-
-```markdown
 # Jeremy Foxx Portfolio
 
 Welcome to my **Jeremy Foxx Portfolio** project! This repository showcases my journey in creating a unique, fintech-inspired, gamified portfolio website. It combines a 3D starry ticker background, Star Wars-style transitions, an interactive skill investment dashboard, and a Netflix-style project showcase—all wrapped up in a sleek Next.js + Tailwind CSS environment.
