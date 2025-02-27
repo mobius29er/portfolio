@@ -1,12 +1,74 @@
 // components/StarryTickers.js
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 export default function StarryTickers({ hyperspace }) {
   const mountRef = useRef(null);
+  const [tickers, setTickers] = useState([]);
 
+  // Adjust these to define the "no-spawn" zone around the center
+  const NO_SPAWN_X = 2.0; // half-width in x
+  const NO_SPAWN_Y = 2.0; // half-height in y
+
+  // 1. Create a helper function for the canvas text
+  function createTextTexture(tickerSymbol) {
+    // Make an in-memory canvas
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Size can be tweaked if text is too large/small
+    canvas.width = 256;
+    canvas.height = 128;
+
+    // Draw the text in white, using Cinzel Decorative
+    ctx.fillStyle = "white";
+    // Adjust the font size if needed
+    ctx.font = "40px 'Cinzel Decorative', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(tickerSymbol, canvas.width / 2, canvas.height / 2);
+
+    // Convert to a Three.js texture
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    return texture;
+  }
+
+  // 2. Create a plane geometry with that text texture
+  function createTextPlane(tickerSymbol) {
+    const texture = createTextTexture(tickerSymbol);
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true, // so the background is invisible
+    });
+    // The plane is 1x0.5; adjust if needed
+    const geometry = new THREE.PlaneGeometry(1, 0.5);
+
+    const mesh = new THREE.Mesh(geometry, material);
+    return mesh;
+  }
+
+  // 3. Fetch the S&P 500 ticker list from our local API
   useEffect(() => {
-    // 1. Setup Scene, Camera, Renderer
+    async function fetchTickers() {
+      try {
+        const res = await fetch("/api/sp500");
+        const data = await res.json();
+        setTickers(data);
+      } catch (err) {
+        console.error(err);
+        // fallback
+        setTickers(["AAPL", "TSLA", "GOOGL"]);
+      }
+    }
+    fetchTickers();
+  }, []);
+
+  // 4. Once we have tickers, create the scene
+  useEffect(() => {
+    if (tickers.length === 0) return;
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -23,56 +85,39 @@ export default function StarryTickers({ hyperspace }) {
       mountRef.current.appendChild(renderer.domElement);
     }
 
-    // 2. Create "Stars" (Placeholder Tickers)
-    const starGeometry = new THREE.SphereGeometry(0.02, 8, 8);
-    // Make material transparent so we can change opacity for twinkle
-    const starMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
+    const tickerPlanes = [];
+
+    // 5. Create a plane for each ticker, avoiding the center bounding box
+    tickers.forEach((symbol) => {
+      const plane = createTextPlane(symbol);
+
+      let x, y, z;
+      do {
+        x = THREE.MathUtils.randFloatSpread(10); // range [-5..5]
+        y = THREE.MathUtils.randFloatSpread(10);
+        z = THREE.MathUtils.randFloatSpread(10);
+        // If it's in the no-spawn box, re-roll
+      } while (Math.abs(x) < NO_SPAWN_X && Math.abs(y) < NO_SPAWN_Y);
+
+      plane.position.set(x, y, z);
+      scene.add(plane);
+      tickerPlanes.push(plane);
     });
 
-    const stars = [];
-    const starCount = 300;
-
-    for (let i = 0; i < starCount; i++) {
-      const star = new THREE.Mesh(starGeometry, starMaterial.clone());
-      // Random position
-      const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(10));
-      star.position.set(x, y, z);
-      // Give each star a random "twinkle offset"
-      star.userData.offset = Math.random() * 100;
-      scene.add(star);
-      stars.push(star);
-    }
-
-    // 3. Animation Loop
-    let clock = new THREE.Clock();
-
+    // 6. Animate forward motion
     function animate() {
       requestAnimationFrame(animate);
 
-      const elapsed = clock.getElapsedTime();
-
-      // We remove the scene rotation for a "forward flight" feel:
-      // scene.rotation.y += 0.0005; // <-- comment this out or remove
-
-      stars.forEach((star) => {
-        // Twinkle effect
-        // const phase = elapsed * 2 + star.userData.offset;
-        // const opacity = 0.5 + 0.5 * Math.sin(phase);
-        // star.material.opacity = opacity;
-
-        // Move the star forward in z to simulate flying
-        // Slow speed if not hyperspace, faster if hyperspace is true
+      tickerPlanes.forEach((plane) => {
+        // Slow if not hyperspace, faster if hyperspace
         const speed = hyperspace ? 0.2 : 0.001;
-        star.position.z += speed;
+        plane.position.z += speed;
 
-        // If the star moves past the camera, reset it behind
-        if (star.position.z > 5) {
-          star.position.z = -5; 
-          // Optionally randomize x/y again so it looks fresh
-          star.position.x = THREE.MathUtils.randFloatSpread(10);
-          star.position.y = THREE.MathUtils.randFloatSpread(10);
+        // Once it goes beyond camera, reset behind
+        if (plane.position.z > 5) {
+          plane.position.z = -5;
+          plane.position.x = THREE.MathUtils.randFloatSpread(10);
+          plane.position.y = THREE.MathUtils.randFloatSpread(10);
         }
       });
 
@@ -80,7 +125,7 @@ export default function StarryTickers({ hyperspace }) {
     }
     animate();
 
-    // 4. Handle Window Resize
+    // 7. Handle Resize
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -88,14 +133,14 @@ export default function StarryTickers({ hyperspace }) {
     }
     window.addEventListener("resize", onWindowResize);
 
-    // Cleanup on unmount
+    // Cleanup
     return () => {
       window.removeEventListener("resize", onWindowResize);
       if (mountRef.current && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [hyperspace]);
+  }, [tickers, hyperspace]);
 
   return <div ref={mountRef} className="fixed inset-0 z-[-1]" />;
 }

@@ -8,6 +8,10 @@ export default function Document() {
         <Main />
         <NextScript />
       </body>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap"
+        rel="stylesheet"
+  /   >
     </Html>
   );
 }
