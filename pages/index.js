@@ -22,7 +22,7 @@ export default function Home() {
 
       <h1
         onClick={handleNameClick}
-        className="relative z-10 text-5xl text-gold font-artDeco border-4 border-gold px-4 py-2 shadow-[0_0_15px_rgba(255,215,0,0.7)] animate-pulse"
+        className="relative z-10 text-5xl text-white font-artDeco mb-4 z-10 cursor-pointer hover:underline hover:text-gold/80 border-4 border-gold px-4 py-2 shadow-[0_0_15px_rgba(255,215,0,0.7)] bg-black animate-pulse"
       >
         Jeremy Foxx Portfolio
       </h1>

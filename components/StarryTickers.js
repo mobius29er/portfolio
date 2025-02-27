@@ -20,10 +20,10 @@ export default function StarryTickers({ hyperspace }) {
     canvas.width = 256;
     canvas.height = 128;
 
-    // Draw the text in white, using Cinzel Decorative
+    // Draw the text in white, using helvetiker_regular font
     ctx.fillStyle = "white";
     // Adjust the font size if needed
-    ctx.font = "40px 'Cinzel Decorative', serif";
+    ctx.font = "40px 'helvetiker_regular', serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(tickerSymbol, canvas.width / 2, canvas.height / 2);

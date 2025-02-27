@@ -6,31 +6,31 @@ const allProjects = [
     title: "FinTech Dashboard",
     description: "A real-time financial dashboard for user investments.",
     skills: ["FinTech", "Data Analytics"],
-    imageUrl: "/images/fintech-dashboard.png", // optional
+    imageUrl: "https://picsum.photos/seed/picsum/300/200", // optional
   },
   {
     title: "Blockchain Explorer",
     description: "Explore blocks and transactions in a custom blockchain.",
     skills: ["Blockchain", "UX/UI"],
-    imageUrl: "/images/blockchain-explorer.png",
+    imageUrl: "https://picsum.photos/seed/picsum/300/200",
   },
   {
     title: "Product Launch Strategy",
     description: "Roadmap and launch plan for a new product line.",
     skills: ["Product Management"],
-    imageUrl: "/images/product-launch.png",
+    imageUrl: "https://picsum.photos/seed/picsum/300/200",
   },
   {
     title: "Analytics Automation",
     description: "Automated data pipeline for advanced reporting.",
     skills: ["Data Analytics"],
-    imageUrl: "/images/analytics-automation.png",
+    imageUrl: "https://picsum.photos/seed/picsum/300/200",
   },
   {
     title: "UI/UX Redesign",
     description: "Overhauled the interface for a legacy application.",
     skills: ["UX/UI"],
-    imageUrl: "/images/ui-ux-redesign.png",
+    imageUrl: "https://picsum.photos/seed/picsum/300/200",
   },
   // Add more as needed
 ];
