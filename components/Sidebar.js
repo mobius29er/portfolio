@@ -26,6 +26,11 @@ export default function Sidebar() {
             Testimonials
           </Link>
         </li>
+        <li>
+          <Link href="/project-ideas" className="hover:text-gold transition">
+            Project Ideas
+          </Link>
+        </li>
       </ul>
     </nav>
   );
